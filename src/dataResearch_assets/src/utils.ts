@@ -1,5 +1,5 @@
 import assert from "assert";
-import { ProfileUpdate } from "../../declarations/avatar/avatar.did";
+import { ProfileUpdate } from "../../declarations/dataResearch/dataResearch.did";
 
 export function profilesMatch(
   p1: undefined | ProfileUpdate,

@@ -3,7 +3,7 @@ import React from "react";
 import {
   ProfileUpdate,
   _SERVICE,
-} from "../../../declarations/avatar/avatar.did";
+} from "../../../declarations/dataResearch/dataResearch.did";
 import ProfileForm from "./ProfileForm";
 import toast from "react-hot-toast";
 import { emptyProfile } from "../hooks";

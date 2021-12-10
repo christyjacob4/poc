@@ -4,7 +4,7 @@ import Nat "mo:base/Nat";
 import Result "mo:base/Result";
 import Principal "mo:base/Principal";
 
-actor Avatar {
+actor DataResearch {
     type Bio = {
         givenName: ?Text;
         familyName: ?Text;
@@ -31,22 +31,15 @@ actor Avatar {
         #NotAuthorized;
     };
 
-    // Application state
     stable var profiles : Trie.Trie<Principal, Profile> = Trie.empty();
 
-    // Application interface
-
-    // Create a profile
     public shared(msg) func create (profile: ProfileUpdate) : async Result.Result<(), Error> {
-        // Get caller principal
         let callerId = msg.caller;
 
-        // Reject AnonymousIdentity
         if(Principal.toText(callerId) == "2vxsx-fae") {
             return #err(#NotAuthorized);
         };
 
-        // Associate user profile with their principal
         let userProfile: Profile = {
             bio = profile.bio;
             image = profile.image;
@@ -54,55 +47,45 @@ actor Avatar {
         };
 
         let (newProfiles, existing) = Trie.put(
-            profiles,           // Target trie
-            key(callerId),      // Key
-            Principal.equal,    // Equality checker
+            profiles,
+            key(callerId),
+            Principal.equal,
             userProfile
         );
 
-        // If there is an original value, do not update
         switch(existing) {
-            // If there are no matches, update profiles
             case null {
                 profiles := newProfiles;
                 #ok(());
             };
-            // Matches pattern of type - opt Profile
             case (? v) {
                 #err(#AlreadyExists);
             };
         };
     };
 
-    // Read profile
     public shared(msg) func read () : async Result.Result<Profile, Error> {
-        // Get caller principal
         let callerId = msg.caller;
 
-        // Reject AnonymousIdentity
         if(Principal.toText(callerId) == "2vxsx-fae") {
             return #err(#NotAuthorized);
         };
 
         let result = Trie.find(
-            profiles,           //Target Trie
-            key(callerId),      // Key
-            Principal.equal     // Equality Checker
+            profiles,
+            key(callerId),
+            Principal.equal
         );
         return Result.fromOption(result, #NotFound);
     };
 
-    // Update profile
     public shared(msg) func update (profile : ProfileUpdate) : async Result.Result<(), Error> {
-        // Get caller principal
         let callerId = msg.caller;
 
-        // Reject AnonymousIdentity
         if(Principal.toText(callerId) == "2vxsx-fae") {
             return #err(#NotAuthorized);
         };
 
-        // Associate user profile with their principal
         let userProfile: Profile = {
             bio = profile.bio;
             image = profile.image;
@@ -110,21 +93,20 @@ actor Avatar {
         };
 
         let result = Trie.find(
-            profiles,           //Target Trie
-            key(callerId),     // Key
-            Principal.equal           // Equality Checker
+            profiles,
+            key(callerId),
+            Principal.equal
         );
 
         switch (result){
-            // Do not allow updates to profiles that haven't been created yet
             case null {
                 #err(#NotFound)
             };
             case (? v) {
                 profiles := Trie.replace(
-                    profiles,           // Target trie
-                    key(callerId),      // Key
-                    Principal.equal,    // Equality checker
+                    profiles,
+                    key(callerId),
+                    Principal.equal,
                     ?userProfile
                 ).0;
                 #ok(());
@@ -132,32 +114,28 @@ actor Avatar {
         };
     };
 
-    // Delete profile
     public shared(msg) func delete () : async Result.Result<(), Error> {
-        // Get caller principal
         let callerId = msg.caller;
 
-        // Reject AnonymousIdentity
         if(Principal.toText(callerId) == "2vxsx-fae") {
             return #err(#NotAuthorized);
         };
 
         let result = Trie.find(
-            profiles,           //Target Trie
-            key(callerId),      // Key
-            Principal.equal     // Equality Checker
+            profiles,
+            key(callerId),
+            Principal.equal
         );
 
         switch (result){
-            // Do not try to delete a profile that hasn't been created yet
             case null {
                 #err(#NotFound);
             };
             case (? v) {
                 profiles := Trie.replace(
-                    profiles,           // Target trie
-                    key(callerId),     // Key
-                    Principal.equal,          // Equality checker
+                    profiles,
+                    key(callerId),
+                    Principal.equal,
                     null
                 ).0;
                 #ok(());

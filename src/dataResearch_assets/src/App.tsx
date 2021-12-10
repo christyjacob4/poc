@@ -8,7 +8,7 @@ import {
 import styled from "styled-components";
 import NotAuthenticated from "./components/NotAuthenticated";
 import Home from "./components/Home";
-import { _SERVICE, ProfileUpdate } from "../../declarations/avatar/avatar.did";
+import { _SERVICE, ProfileUpdate } from "../../declarations/dataResearch/dataResearch.did";
 import toast, { Toaster } from "react-hot-toast";
 import ErrorBoundary from "./components/ErrorBoundary";
 import {
@@ -87,7 +87,7 @@ const App = () => {
 
     if (actor) {
       if (!profile) {
-        toast.loading("Checking the IC for an existing avatar");
+        toast.loading("Checking the IC for an existing profile");
       }
       actor.read().then((result) => {
         if (history.location.pathname === "/") return;
@@ -96,7 +96,7 @@ const App = () => {
           if (profilesMatch(profile, result.ok)) {
             return;
           }
-          toast.success("Updated avatar from IC");
+          toast.success("Updated profile from IC");
           updateProfile(result.ok);
         } else {
           if ("NotAuthorized" in result.err) {
@@ -107,7 +107,7 @@ const App = () => {
             // User has deleted account
             remove("profile");
             if (profile) {
-              toast.error("Avatar not found in IC. Please try creating again");
+              toast.error("Profile not found in IC. Please try creating again");
             }
             updateProfile(undefined);
           } else {
@@ -156,7 +156,7 @@ const App = () => {
                     Log out
                   </ActionButton>
                 </Route>
-                <h2>IC Avatar</h2>
+                <h2>Data Research</h2>
               </Header>
               <Main>
                 <Flex maxWidth={700} margin="2rem auto" id="main-container">

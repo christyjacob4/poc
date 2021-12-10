@@ -1,19 +1,19 @@
 {
   "canisters": {
-    "avatar": {
-      "main": "src/avatar/main.mo",
+    "dataResearch": {
+      "main": "src/dataResearch/main.mo",
       "type": "motoko"
     },
-    "avatar_assets": {
+    "dataResearch_assets": {
       "dependencies": [
-        "avatar"
+        "dataResearch"
       ],
       "frontend": {
-        "entrypoint": "src/avatar_assets/src/index.html"
+        "entrypoint": "src/dataResearch_assets/src/index.html"
       },
       "source": [
-        "src/avatar_assets/assets",
-        "dist/avatar_assets/"
+        "src/dataResearch_assets/assets",
+        "dist/dataResearch_assets/"
       ],
       "type": "assets"
     }

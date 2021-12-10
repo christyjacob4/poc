@@ -36,7 +36,7 @@ function initCanisterIds() {
 initCanisterIds();
 
 const isDevelopment = process.env.NODE_ENV !== "production";
-const asset_entry = path.join("src", "avatar_assets", "src", "index.html");
+const asset_entry = path.join("src", "dataResearch_assets", "src", "index.html");
 
 module.exports = {
   target: "web",
@@ -63,7 +63,7 @@ module.exports = {
   },
   output: {
     filename: "index.js",
-    path: path.join(__dirname, "dist", "avatar_assets"),
+    path: path.join(__dirname, "dist", "dataResearch_assets"),
   },
 
   // Depending in the language or framework you are using for
@@ -93,14 +93,14 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         {
-          from: path.join(__dirname, "src", "avatar_assets", "assets"),
-          to: path.join(__dirname, "dist", "avatar_assets"),
+          from: path.join(__dirname, "src", "dataResearch_assets", "assets"),
+          to: path.join(__dirname, "dist", "dataResearch_assets"),
         },
       ],
     }),
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development",
-      AVATAR_CANISTER_ID: canisters["avatar"],
+      DATARESEARCH_CANISTER_ID: canisters["dataResearch"],
       II_URL: isDevelopment
         ? "https://identity.ic0.app/#authorize"
         : "https://identity.ic0.app/#authorize",
@@ -122,7 +122,7 @@ module.exports = {
       },
     },
     hot: true,
-    contentBase: path.resolve(__dirname, "./src/avatar_assets"),
+    contentBase: path.resolve(__dirname, "./src/dataResearch_assets"),
     watchContentBase: true,
     port: 3000,
     historyApiFallback: true,

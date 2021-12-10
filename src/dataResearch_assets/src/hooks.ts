@@ -2,8 +2,8 @@ import { ActorSubclass, Identity } from "@dfinity/agent";
 import { AuthClient } from "@dfinity/auth-client";
 import { clear, get, remove, set } from "local-storage";
 import { useState, useEffect } from "react";
-import { canisterId, createActor } from "../../declarations/avatar";
-import { ProfileUpdate, _SERVICE } from "../../declarations/avatar/avatar.did";
+import { canisterId, createActor } from "../../declarations/dataResearch";
+import { ProfileUpdate, _SERVICE } from "../../declarations/dataResearch/dataResearch.did";
 
 type UseAuthClientProps = {};
 export function useAuthClient(props?: UseAuthClientProps) {

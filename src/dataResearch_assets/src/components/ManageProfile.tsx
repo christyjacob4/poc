@@ -17,7 +17,7 @@ import styled from "styled-components";
 import {
   ProfileUpdate,
   _SERVICE,
-} from "../../../declarations/avatar/avatar.did";
+} from "../../../declarations/dataResearch/dataResearch.did";
 import { AppContext } from "../App";
 import { emptyProfile } from "../hooks";
 import { profilesMatch } from "../utils";
@@ -59,7 +59,7 @@ function ManageProfile() {
       )
     ) {
       const result = await actor?.delete();
-      toast.success("Avatar successfully deleted");
+      toast.success("Profile successfully deleted");
       remove("profile");
       history.push("/");
     }
@@ -73,7 +73,7 @@ function ManageProfile() {
     // Optimistically update
     updateProfile?.(profile);
     set("profile", JSON.stringify(profile));
-    toast.success("Avatar updated!");
+    toast.success("Profile updated!");
     setIsEditing(false);
 
     // Handle update async

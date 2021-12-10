@@ -11,7 +11,7 @@ import {
   Bio,
   ProfileUpdate,
   _SERVICE,
-} from "../../../declarations/avatar/avatar.did";
+} from "../../../declarations/dataResearch/dataResearch.did";
 import { emptyProfile } from "../hooks";
 import ProfileUpload from "./ProfileUpload";
 
