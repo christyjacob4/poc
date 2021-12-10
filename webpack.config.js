@@ -102,7 +102,7 @@ module.exports = {
       NODE_ENV: "development",
       DATARESEARCH_CANISTER_ID: canisters["dataResearch"],
       II_URL: isDevelopment
-        ? "https://identity.ic0.app/#authorize"
+        ? "http://localhost:8000?canisterId=rwlgt-iiaaa-aaaaa-aaaaa-cai#authorize"
         : "https://identity.ic0.app/#authorize",
     }),
     new webpack.ProvidePlugin({
