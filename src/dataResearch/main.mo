@@ -1,149 +1,145 @@
-import Trie "mo:base/Trie";
-import Hash "mo:base/Hash";
-import Nat "mo:base/Nat";
-import Result "mo:base/Result";
+import Types "Types";
 import Principal "mo:base/Principal";
+import Debug "mo:base/Debug";
+import HashMap "mo:base/HashMap";
+import Buffer "mo:base/Buffer";
+import Result "mo:base/Result";
+import P "Survey";
+import Cycles "mo:base/ExperimentalCycles";
 
 actor DataResearch {
-    type Bio = {
-        givenName: ?Text;
-        familyName: ?Text;
-        name: ?Text;
-        displayName: ?Text;
-        location: ?Text;
-        about: ?Text;
-    };
 
-    type Profile = {
-        bio: Bio;
-        id: Principal;
-        image: ?Text;
-    };
-    
-    type ProfileUpdate = {
-        bio: Bio;
-        image: ?Text;
-    };
+    // Types
+    type Profile = Types.Profile;
+    type Bio = Types.Bio;
+    type CanisterType = Types.CaniserType;
+    type PublicSurvey = Types.PublicSurvey;
 
-    type Error = {
-        #NotFound;
-        #AlreadyExists;
-        #NotAuthorized;
-    };
+    // State
+    let map = HashMap.HashMap<Principal, Profile>(1, Principal.equal, Principal.hash);
+    let publicSurveys = HashMap.HashMap<Principal, Buffer.Buffer<PublicSurvey>>(1, Principal.equal, Principal.hash);
+    let privateSurveys = HashMap.HashMap<Principal, Buffer.Buffer<P.PrivateSurvey>>(1, Principal.equal, Principal.hash);
 
-    stable var profiles : Trie.Trie<Principal, Profile> = Trie.empty();
-
-    public shared(msg) func create (profile: ProfileUpdate) : async Result.Result<(), Error> {
+    // API
+    public shared(msg) func createProfile(bio: Bio): async ?Profile {
         let callerId = msg.caller;
+        let profile = map.get(callerId);
 
-        if(Principal.toText(callerId) == "2vxsx-fae") {
-            return #err(#NotAuthorized);
+        if (profile != null) {
+            return null;
         };
 
         let userProfile: Profile = {
-            bio = profile.bio;
-            image = profile.image;
             id = callerId;
+            bio = bio;
+            privateSurveys = [];
         };
 
-        let (newProfiles, existing) = Trie.put(
-            profiles,
-            key(callerId),
-            Principal.equal,
-            userProfile
-        );
-
-        switch(existing) {
-            case null {
-                profiles := newProfiles;
-                #ok(());
-            };
-            case (? v) {
-                #err(#AlreadyExists);
-            };
-        };
+        map.replace(callerId, userProfile);
     };
 
-    public shared(msg) func read () : async Result.Result<Profile, Error> {
+    public shared(msg) func getProfile(): async ?Profile {
         let callerId = msg.caller;
-
-        if(Principal.toText(callerId) == "2vxsx-fae") {
-            return #err(#NotAuthorized);
-        };
-
-        let result = Trie.find(
-            profiles,
-            key(callerId),
-            Principal.equal
-        );
-        return Result.fromOption(result, #NotFound);
+        map.get(callerId);
     };
 
-    public shared(msg) func update (profile : ProfileUpdate) : async Result.Result<(), Error> {
+    public shared(msg) func updateProfile(bio: Bio): async ?Profile {
         let callerId = msg.caller;
-
-        if(Principal.toText(callerId) == "2vxsx-fae") {
-            return #err(#NotAuthorized);
-        };
 
         let userProfile: Profile = {
-            bio = profile.bio;
-            image = profile.image;
+            bio = bio;
             id = callerId;
         };
 
-        let result = Trie.find(
-            profiles,
-            key(callerId),
-            Principal.equal
-        );
+        let result = map.get(callerId);
 
-        switch (result){
-            case null {
-                #err(#NotFound)
-            };
-            case (? v) {
-                profiles := Trie.replace(
-                    profiles,
-                    key(callerId),
-                    Principal.equal,
-                    ?userProfile
-                ).0;
-                #ok(());
-            };
+        if (result == null) {
+            return null;
         };
+
+        map.replace(callerId, userProfile);
     };
 
-    public shared(msg) func delete () : async Result.Result<(), Error> {
+    public shared(msg) func deleteProfile(): async ?Profile {
+        let callerId = msg.caller;
+        map.remove(callerId);
+    };
+
+    public shared(msg) func createSurvey(_name: Text, canisterType : CanisterType ) {
         let callerId = msg.caller;
 
-        if(Principal.toText(callerId) == "2vxsx-fae") {
-            return #err(#NotAuthorized);
-        };
+        switch (canisterType) {
+            case (#Private) {
+                let surveys = privateSurveys.get(callerId);
+                
+                Cycles.add(100_000_000);
 
-        let result = Trie.find(
-            profiles,
-            key(callerId),
-            Principal.equal
-        );
+                let survey = await P.PrivateSurvey(_name);
 
-        switch (result){
-            case null {
-                #err(#NotFound);
+                Debug.print(await survey.getName());
+
+                switch (surveys) {
+                    case null {
+                        let _surveys = Buffer.Buffer<P.PrivateSurvey>(1);
+                        _surveys.add(survey);
+                        privateSurveys.put(callerId, _surveys);
+                    };
+                    case (? v) {
+                        v.add(survey);
+                        privateSurveys.put(callerId, v);
+                    }
+                };
+
             };
-            case (? v) {
-                profiles := Trie.replace(
-                    profiles,
-                    key(callerId),
-                    Principal.equal,
-                    null
-                ).0;
-                #ok(());
+            case (#Community) {
+                let surveys = publicSurveys.get(callerId);
+                let survey : PublicSurvey = {
+                    name = _name;
+                    canisterId = await idQuick();
+                };
+                switch (surveys) {
+                    case null {
+                        let _surveys = Buffer.Buffer<PublicSurvey>(1);
+                        _surveys.add(survey);
+                        publicSurveys.put(callerId, _surveys);
+                    };
+                    case (? v) {
+                        v.add(survey);
+                        publicSurveys.put(callerId, v);
+                    }
+                };
             };
-        };
+        }
     };
 
-    private func key(x : Principal) : Trie.Key<Principal> {
-        return { key = x; hash = Principal.hash(x) }
+    public shared(msg) func getPublicSurveys(): async [PublicSurvey] {
+        let callerId = msg.caller;
+        let _publicSurveys = publicSurveys.get(callerId); 
+        switch (_publicSurveys) {
+            case null {
+                return [];
+            };
+            case (? v) {
+                return v.toArray();
+            };
+        }
+    };
+
+    public shared(msg) func getPrivateSurveys(): async [P.PrivateSurvey] {
+        let callerId = msg.caller;
+        let _privateSurveys = privateSurveys.get(callerId); 
+        switch (_privateSurveys) {
+            case null {
+                Debug.print("Empty Private Surveys");
+                return [];
+            };
+            case (? v) {
+                return v.toArray();
+            };
+        }
+    };
+
+    func idQuick() : async Principal { 
+       return Principal.fromActor(DataResearch);
     };
 }
